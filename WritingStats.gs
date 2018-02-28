@@ -1,6 +1,6 @@
 var daily_diff = "";
 var error_count = 0;
-var WRITING_DATA = "[INSERT YOUR SPREADSHEET ID]";                              
+var WRITING_DATA = "1TpS1a09uQzb_s8dmt9QeotEI-nGbz_9p0dV4R0A_o6A";                              
 
 var TEST_MODE = loadConfigData("Test Mode");
 var EMAIL_ADDRESS = loadConfigData("Email Address");
@@ -35,6 +35,7 @@ var WRITING_TOTAL = loadConfigData("Writing Total");
 var WRITING_AVERAGE = loadConfigData("Writing Average");
 var WRITING_GOAL = loadConfigData("Writing Goal");
 var WRITING_TIME = loadConfigData("Writing Time");
+var WRITING_WORDS_MINUTE = loadConfigData("Words per Minute");
 
 /* Execution parameters */
 var FICTION_TAG = loadConfigData("Fiction Tag");
@@ -251,6 +252,11 @@ function getDailyWordCount() {
   var avgCell = sheet.getRange(WRITING_AVERAGE + range);
   var avgStart = range - 6;
   
+  if (avgStart < 2)
+  {
+    avgStart = 2;
+  }
+  
   
   var words = words_fiction + words_nonfiction;
   
@@ -264,6 +270,7 @@ function getDailyWordCount() {
     Logger.log("TEST MODE: Would set " + WRITING_TIME + range + " to " + time_total);
     Logger.log("TEST MODE: Would set " + WRITING_AVERAGE + range + " to =AVERAGE(" + WRITING_TOTAL + avgStart + ":" + WRITING_TOTAL + range + ")");
     Logger.log("TEST MODE: Would set " + WRITING_GOAL + range + " to " + daily_goal);
+    Logger.log("TEST MODE: Would set " + WRITING_WORDS_MINUTE + range + " to " + "="+WRITING_TOTAL+range+"/"+WRITING_TIME+range);
   } else {
     dateCell.setValue(today);
     if (MODE == 1) {
@@ -355,7 +362,7 @@ function getWritingTime(rt_date) {
     var gDoc = result_rows[i][3];
     Logger.log(gDoc);
     //if (gDoc.indexOf("Google Doc")>0) {
-    if ((gDoc == "Google Documents") || (gDoc == "Google Docs")) {
+    if ((gDoc == "Google Documents") || (gDoc == "Google Docs: Editor")) {
       Logger.log("Have a match!");
       totalSeconds += result_rows[i][1];
     }
