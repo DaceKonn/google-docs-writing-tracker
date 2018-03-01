@@ -29,10 +29,14 @@ var COL_BLOGGING_TOTAL = loadConfigData("Blogging Total");
 var COL_FICTION = loadConfigData("Writing Fiction");
 var COL_NONFICTION = loadConfigData("Writing Nonfiction");
 var COL_WRITING_TIME = loadConfigData("Writing Time");
+var COL_AVERAGE = loadConfigData("Writing Average");
 var COL_WRITING_WORDS_MINUTE = loadConfigData("Words per Minute");
+var COL_GOAL = loadConfigData("Writing Goal");
+var COL_DATES = loadConfigData("Writing Date");
 
 /* Email customization */
 var EMAIL_SUBJECT = loadConfigData("Almanac Subject");
+var INCLUDE_CHART_IN_EMAIL = loadConfigData("Include Chart in Almanac", 0);
 
 
 /* Execution Parameters */
@@ -77,9 +81,14 @@ function verifySetup() {
 }  
 
 function loadConfigData(setting) {
-    if (verifiedConfig == 0) {
+  loadConfigData(setting, null); 
+}
+
+function loadConfigData(setting, defaultValue) {
+  if (verifiedConfig == 0) {
     verifySetup();
   }
+ 
  
   try {
     var ss = SpreadsheetApp.openById(WRITING_DATA);
@@ -91,9 +100,13 @@ function loadConfigData(setting) {
   var last_row = config_sheet.getLastRow();
   var range = config_sheet.getRange("A2:B" + last_row);
   var row = find(setting, range);
-  if (row == null)
-    throw new Error ("ERROR: Could not find setting '" + setting + "' in the Config tab.");   
-  else {
+  if (row == null) {
+    if (defaultValue == null) {
+      throw new Error ("ERROR: Could not find setting '" + setting + "' in the Config tab.");   
+    } else {
+      row = defaultValue;
+    }
+  } else {
     var row_result = row.getRow();
     var result = config_sheet.getRange("B" + row_result).getValue();
     if (config_sheet.getRange("C" + row_result).getValue() == "Required" && result == "") {
@@ -356,7 +369,32 @@ function getAlamancText() {
       subject = "(TEST) " + subject;
     }
     var tumblr_sub = "Daily Writing Almanac for " + almanac_day;
-    MailApp.sendEmail(EMAIL_ADDRESS, subject, "", {htmlBody: message});
+    
+    Logger.log("Include chart flag: " + INCLUDE_CHART_IN_EMAIL);  
+    if (INCLUDE_CHART_IN_EMAIL == 1) {
+      Logger.log("Including chart");  
+      // Add charts to email.
+      var emailImages={};
+      var chartBlobs = new Array(1);
+      
+      var chartWordCount = buildWordCountChart();
+      var chartWritingTime = buildWritingTimeChart();
+      var chartWordsPerMinute = buildWordsPerMinuteChart();
+      var chartTimeAndWords = buildTimeAndWordsChart();
+      
+      message = message + chartWordCount.message;
+      emailImages[chartWordCount.codeName] = chartWordCount.image;
+      message = message + chartWritingTime.message;
+      emailImages[chartWritingTime.codeName] = chartWritingTime.image;
+      message = message + chartWordsPerMinute.message;
+      emailImages[chartWordsPerMinute.codeName] = chartWordsPerMinute.image;
+      message = message + chartTimeAndWords.message;
+      emailImages[chartTimeAndWords.codeName] = chartTimeAndWords.image;
+      
+      MailApp.sendEmail({ to: EMAIL_ADDRESS, subject: subject, htmlBody: message, inlineImages: emailImages });
+    } else {
+      MailApp.sendEmail(EMAIL_ADDRESS, subject, "", {htmlBody: message});
+    }
     
     if (TEST_MODE == 0 && USE_TUMBLR == 1)
       MailApp.sendEmail(TUMBLR_EMAIL, tumblr_sub, "", {htmlBody: message});
