@@ -112,7 +112,7 @@ function loadConfigData(setting) {
 
 function testHarness()
 {
-  getDailyWordCount(1, 26, 2015);
+  getDailyWordCount(2, 28, 2018);
 }
 
 function testRescueTime()
@@ -250,6 +250,8 @@ function getDailyWordCount() {
   var goalCell = sheet.getRange(WRITING_GOAL + range);
   var timeCell = sheet.getRange(WRITING_TIME + range);
   var avgCell = sheet.getRange(WRITING_AVERAGE + range);
+  var wordsPerMinuteCell = sheet.getRange(WRITING_WORDS_MINUTE + range);
+  
   var avgStart = range - 6;
   
   if (avgStart < 2)
@@ -281,6 +283,7 @@ function getDailyWordCount() {
     timeCell.setValue(time_total);
     goalCell.setValue(daily_goal);
     avgCell.setFormula("=AVERAGE(" + WRITING_TOTAL + avgStart + ":" + WRITING_TOTAL + range + ")");
+    wordsPerMinuteCell.setFormula("="+WRITING_TOTAL+range+"/"+WRITING_TIME+range);
   }
     
   if (daily_diff != "") {
